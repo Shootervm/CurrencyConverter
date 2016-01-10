@@ -3,6 +3,7 @@
 
 import argparse
 import csv
+import json
 import sys
 import xml.etree.ElementTree as ET
 from pprint import pprint
@@ -61,24 +62,71 @@ def get_parameters():
                         help="Amount of imputed currency, that will be calculated by conversion rate/rates")
     parser.add_argument("--input_currency", "-i", type=str, required=True,
                         help="")
-    parser.add_argument("--output_currency", "-o", nargs='+', type=str, default='',
+    parser.add_argument("--output_currency", "-o", nargs='+', type=str, default=[],
                         help="")
 
     return parser.parse_args()
 
 
+def check_currency(curr, currencies):
+    if len(curr) == 1:
+        print(curr + ' IDK yet')
+    elif len(curr) != 3:
+        print('Currency "' + curr + '" does not fulfill three characters currency alphabetic code requirement',
+              file=sys.stderr)
+        exit(2)
+
+    for cur in currencies:
+        if cur == curr:
+            return
+    else:
+        print('Currency "' + curr + '" is not supported.', file=sys.stderr)
+        exit(2)
+
+
+def check_currencies(args, currencies):
+    check_currency(args.input_currency, currencies)
+    for curr in args.output_currency:
+        check_currency(curr, currencies)
+
+
 def start():
-    parse_currencies()
+    # currencies = parse_currencies()
+    # these currencies are pre-parsed from a csv file, to parse them runtime, uncomment the parser function
+    currencies = {'AED', 'AFN', 'ALL', 'AMD', 'ANG', 'AOA', 'ARS', 'AUD', 'AWG', 'AZN', 'BAM', 'BBD', 'BDT', 'BGN',
+                  'BHD', 'BIF', 'BMD', 'BND', 'BOB', 'BRL', 'BSD', 'BWP', 'BYR', 'BZD', 'CAD', 'CHF', 'CLP', 'CNY',
+                  'COP', 'CRC', 'CUP', 'CVE', 'CZK', 'DJF', 'DKK', 'DOP', 'DZD', 'EGP', 'ERN', 'ETB', 'EUR', 'FJD',
+                  'FKP', 'GBP', 'GEL', 'GHS', 'GIP', 'GMD', 'GNF', 'GTQ', 'GYD', 'HKD', 'HNL', 'HRK', 'HUF', 'IDR',
+                  'ILS', 'INR', 'IQD', 'IRR', 'ISK', 'JMD', 'JOD', 'JPY', 'KES', 'KGS', 'KHR', 'KMF', 'KPW', 'KRW',
+                  'KWD', 'KYD', 'KZT', 'LAK', 'LBP', 'LKR', 'LRD', 'LYD', 'MAD', 'MDL', 'MGA', 'MKD', 'MMK', 'MNT',
+                  'MOP', 'MRO', 'MUR', 'MVR', 'MWK', 'MXN', 'MYR', 'MZN', 'NGN', 'NIO', 'NOK', 'NPR', 'NZD', 'OMR',
+                  'PEN', 'PGK', 'PHP', 'PKR', 'PLN', 'PYG', 'QAR', 'RON', 'RSD', 'RUB', 'RWF', 'SAR', 'SBD', 'SCR',
+                  'SDG', 'SEK', 'SGD', 'SHP', 'SLL', 'SOS', 'SRD', 'SSP', 'STD', 'SYP', 'SZL', 'THB', 'TJS', 'TMT',
+                  'TND', 'TOP', 'TRY', 'TTD', 'TWD', 'TZS', 'UAH', 'UGX', 'USD', 'UYU', 'UZS', 'VEF', 'VND', 'VUV',
+                  'WST', 'XAF', 'XCD', 'XOF', 'XPF', 'YER', 'ZAR', 'ZMW', 'ZWL'}
 
     args = get_parameters()
     pprint(args)
 
-    pprint(get_rates("EUR", list(parse_currencies())))
+    check_currencies(args, currencies)
+
+    # pprint(get_rates("EUR", list(parse_currencies())))
     # get_rates("EUR", ["AUD", "USD"])
     # get_rates("EUR", "CZK")
 
-    ret = {"input": {}, "output": {}}
-    pprint(ret)
+    conversion_rates = get_rates(args.input_currency,
+                                 args.output_currency if args.output_currency else list(currencies))
+
+    pprint(conversion_rates)
+
+    ret = {"input": {"amount": args.amount, "currency": args.input_currency}, "output": {}}
+    for rate in conversion_rates:
+        try:
+            ret['output'][rate[3:]] = args.amount * float(conversion_rates[rate])
+        except ValueError:
+            ret['output'][rate[3:]] = ""  # if conversion rate is missing leave field empty with ""
+
+    print(json.dumps(ret, sort_keys=True, indent=4, separators=(',', ': ')))
 
 
 if __name__ == '__main__':
