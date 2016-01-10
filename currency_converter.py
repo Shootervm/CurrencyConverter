@@ -19,6 +19,16 @@ def parse_currencies():
             col = row['currency_alphabetic_code']
             if col:
                 currencies.add(col)
+    return list(currencies)
+
+
+def parse_symbols():
+    currencies = {}
+    with open('symbols.csv', 'r') as csv_file:
+        for row in csv.DictReader(csv_file, delimiter='\t'):
+            col2 = row['Symbol']
+            if len(col2) == 1:
+                currencies[col2] = row['Code ISO 4217']
     return currencies
 
 
@@ -61,16 +71,21 @@ def get_parameters():
     parser.add_argument("--amount", "-a", type=float, required=True,
                         help="Amount of imputed currency, that will be calculated by conversion rate/rates")
     parser.add_argument("--input_currency", "-i", type=str, required=True,
-                        help="")
+                        help="Input currency (3 letters [Code ISO 4217] or currency symbol)")
     parser.add_argument("--output_currency", "-o", nargs='+', type=str, default=[],
-                        help="")
+                        help="Requested/Output currency (3 letters [Code ISO 4217] or currency symbol), "
+                             "if missing all know currencies will be outputted")
 
     return parser.parse_args()
 
 
-def check_currency(curr, currencies):
+def check_currency(curr, currencies, symbols):
     if len(curr) == 1:
-        print(curr + ' IDK yet')
+        for sym in symbols:
+            if sym == curr:
+                return symbols[sym]
+        print('Currency "' + curr + '" is not in wellknown symbols', file=sys.stderr)
+        exit(2)
     elif len(curr) != 3:
         print('Currency "' + curr + '" does not fulfill three characters currency alphabetic code requirement',
               file=sys.stderr)
@@ -78,22 +93,24 @@ def check_currency(curr, currencies):
 
     for cur in currencies:
         if cur == curr:
-            return
+            return curr
     else:
         print('Currency "' + curr + '" is not supported.', file=sys.stderr)
         exit(2)
 
 
-def check_currencies(args, currencies):
-    check_currency(args.input_currency, currencies)
+def check_currencies(args, currencies, symbols):
+    args.input_currency = check_currency(args.input_currency, currencies, symbols)
+    checked = set()
     for curr in args.output_currency:
-        check_currency(curr, currencies)
+        checked.add(check_currency(curr, currencies, symbols))
+    args.output_currency = list(checked)
 
 
 def start():
     # currencies = parse_currencies()
     # these currencies are pre-parsed from a csv file, to parse them runtime, uncomment the parser function
-    currencies = {'AED', 'AFN', 'ALL', 'AMD', 'ANG', 'AOA', 'ARS', 'AUD', 'AWG', 'AZN', 'BAM', 'BBD', 'BDT', 'BGN',
+    currencies = ['AED', 'AFN', 'ALL', 'AMD', 'ANG', 'AOA', 'ARS', 'AUD', 'AWG', 'AZN', 'BAM', 'BBD', 'BDT', 'BGN',
                   'BHD', 'BIF', 'BMD', 'BND', 'BOB', 'BRL', 'BSD', 'BWP', 'BYR', 'BZD', 'CAD', 'CHF', 'CLP', 'CNY',
                   'COP', 'CRC', 'CUP', 'CVE', 'CZK', 'DJF', 'DKK', 'DOP', 'DZD', 'EGP', 'ERN', 'ETB', 'EUR', 'FJD',
                   'FKP', 'GBP', 'GEL', 'GHS', 'GIP', 'GMD', 'GNF', 'GTQ', 'GYD', 'HKD', 'HNL', 'HRK', 'HUF', 'IDR',
@@ -103,21 +120,18 @@ def start():
                   'PEN', 'PGK', 'PHP', 'PKR', 'PLN', 'PYG', 'QAR', 'RON', 'RSD', 'RUB', 'RWF', 'SAR', 'SBD', 'SCR',
                   'SDG', 'SEK', 'SGD', 'SHP', 'SLL', 'SOS', 'SRD', 'SSP', 'STD', 'SYP', 'SZL', 'THB', 'TJS', 'TMT',
                   'TND', 'TOP', 'TRY', 'TTD', 'TWD', 'TZS', 'UAH', 'UGX', 'USD', 'UYU', 'UZS', 'VEF', 'VND', 'VUV',
-                  'WST', 'XAF', 'XCD', 'XOF', 'XPF', 'YER', 'ZAR', 'ZMW', 'ZWL'}
+                  'WST', 'XAF', 'XCD', 'XOF', 'XPF', 'YER', 'ZAR', 'ZMW', 'ZWL']
+    # symbols = parse_symbols()
+    # these are the well known currency symbols that can be used, to parse them uncomment the function call above
+    symbols = {'$': 'USD', '¢': 'GHC', '£': 'GBP', '¥': 'JPY', 'ƒ': 'ANG', '؋': 'AFN', '฿': 'THB', '៛': 'KHR',
+               '₡': 'CRC', '₤': 'TRL', '₦': 'NGN', '₨': 'PKR', '₩': 'KRW', '₪': 'ILS', '₫': 'VND', '€': 'EUR',
+               '₭': 'LAK', '₮': 'MNT', '₱': 'CUP', '₴': 'UAH', '₹': 'INR', '﷼': 'IRR'}
 
     args = get_parameters()
-    pprint(args)
-
-    check_currencies(args, currencies)
-
-    # pprint(get_rates("EUR", list(parse_currencies())))
-    # get_rates("EUR", ["AUD", "USD"])
-    # get_rates("EUR", "CZK")
+    check_currencies(args, currencies, symbols)  # will perform check of validity and translate symbols to 3 chars sets
 
     conversion_rates = get_rates(args.input_currency,
-                                 args.output_currency if args.output_currency else list(currencies))
-
-    pprint(conversion_rates)
+                                 args.output_currency if args.output_currency else currencies)
 
     ret = {"input": {"amount": args.amount, "currency": args.input_currency}, "output": {}}
     for rate in conversion_rates:
@@ -126,6 +140,7 @@ def start():
         except ValueError:
             ret['output'][rate[3:]] = ""  # if conversion rate is missing leave field empty with ""
 
+    # pretty print dumped json structure (output of the script)
     print(json.dumps(ret, sort_keys=True, indent=4, separators=(',', ': ')))
 
 
