@@ -123,7 +123,7 @@ def start():
                   'WST', 'XAF', 'XCD', 'XOF', 'XPF', 'YER', 'ZAR', 'ZMW', 'ZWL']
     # symbols = parse_symbols()
     # these are the well known currency symbols that can be used, to parse them uncomment the function call above
-    symbols = {'$': 'USD', '¢': 'GHC', '£': 'GBP', '¥': 'JPY', 'ƒ': 'ANG', '؋': 'AFN', '฿': 'THB', '៛': 'KHR',
+    symbols = {'$': 'USD', '¢': 'GHC', '£': 'GBP', '¥': 'CNY', 'ƒ': 'ANG', '؋': 'AFN', '฿': 'THB', '៛': 'KHR',
                '₡': 'CRC', '₤': 'TRL', '₦': 'NGN', '₨': 'PKR', '₩': 'KRW', '₪': 'ILS', '₫': 'VND', '€': 'EUR',
                '₭': 'LAK', '₮': 'MNT', '₱': 'CUP', '₴': 'UAH', '₹': 'INR', '﷼': 'IRR'}
 
