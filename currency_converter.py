@@ -4,9 +4,9 @@
 import argparse
 import csv
 import json
+from json import encoder
 import sys
 import xml.etree.ElementTree as ET
-from pprint import pprint
 from urllib import request
 
 __author__ = 'Vojtech Mašek'
@@ -139,6 +139,9 @@ def start():
             ret['output'][rate[3:]] = args.amount * float(conversion_rates[rate])
         except ValueError:
             ret['output'][rate[3:]] = ""  # if conversion rate is missing leave field empty with ""
+
+    # This will set Float precision to 2 digits after the floating point
+    encoder.FLOAT_REPR = lambda f: ("%.2f" % f)
 
     # pretty print dumped json structure (output of the script)
     print(json.dumps(ret, sort_keys=True, indent=4, separators=(',', ': ')))
