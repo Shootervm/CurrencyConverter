@@ -8,6 +8,7 @@ from json import encoder
 import sys
 import xml.etree.ElementTree as ET
 from urllib import request
+import traceback
 
 __email__ = 'shooter.vm@gmail.com'
 __author__ = 'Vojtech Mašek'
@@ -44,7 +45,7 @@ def download_rates(url):
         return response.read()
 
     except Exception as e:
-        print('Exception\n\n' + str(e), file=sys.stderr)
+        traceback.print_tb(e.__traceback__)
         exit(1)
 
 
