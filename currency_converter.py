@@ -52,9 +52,9 @@ def get_rates(input_cur, output_cur):
     query = 'select%20*%20from%20yahoo.finance.xchange%20where%20pair%20in%20('
     if type(output_cur) is list:
         for cur in output_cur:
-            query += '"' + input_cur + cur + '",' if input_cur != cur else ''  # TODO: '.format()'? Or at least %s?
+            query += '"{}{}",'.format(input_cur, cur) if input_cur != cur else ''
     else:
-        query += '"' + input_cur + output_cur + '",'  # TODO: '.format()' or at least %s
+        query += '"{}{}",'.format(input_cur, output_cur)
     query = query[:-1] + ')'
     url = "http://query.yahooapis.com/v1/public/yql?q=" + query + "&env=store://datatables.org/alltableswithkeys"
 
