@@ -9,6 +9,7 @@ import sys
 import xml.etree.ElementTree as ET
 from urllib import request
 import traceback
+import time
 
 __email__ = 'shooter.vm@gmail.com'
 __author__ = 'Vojtech Mašek'
@@ -49,6 +50,24 @@ def download_rates(url):
         exit(1)
 
 
+def timeit_to_file(fname):
+    def timeit(method):
+        def timed(*args, **kw):
+            ts = time.time()
+            result = method(*args, **kw)
+            te = time.time()
+
+            with open(fname, 'a') as f:
+                f.write("{} time duration was: {}\n".format(method.__name__, te - ts))
+
+            print('%r (%r, %r) %2.2f sec' %
+                  (method.__name__, args, kw, te - ts))
+            return result
+        return timed
+    return timeit
+
+
+@timeit_to_file('./times.time')
 def get_rates(input_cur, output_cur):
     query = 'select%20*%20from%20yahoo.finance.xchange%20where%20pair%20in%20('
     if type(output_cur) is list:
