@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*- # cool
+# -*- coding: utf-8 -*-
 
 import argparse
 import csv
@@ -9,12 +9,13 @@ import sys
 import xml.etree.ElementTree as ET
 from urllib import request
 
+__email__ = 'shooter.vm@gmail.com'
 __author__ = 'Vojtech Mašek'
 
 
 def parse_currencies():
     currencies = set()
-    with open('currencies.csv', 'r') as csv_file: # cool
+    with open('currencies.csv', 'r') as csv_file:
         for row in csv.DictReader(csv_file, delimiter=','):
             col = row['currency_alphabetic_code']
             if col:
@@ -37,23 +38,23 @@ def download_rates(url):
         get_request = request.Request(url, method='GET')
         response = request.urlopen(get_request)
 
-        if response.getcode() is not 200: # cool
+        if response.getcode() is not 200:
             print(response.getcode(), file=sys.stderr)
 
         return response.read()
 
     except Exception as e:
-        print('Exception\n\n' + str(e), file=sys.stderr) # cool
-        exit(1) # cool
+        print('Exception\n\n' + str(e), file=sys.stderr)
+        exit(1)
 
 
 def get_rates(input_cur, output_cur):
     query = 'select%20*%20from%20yahoo.finance.xchange%20where%20pair%20in%20('
     if type(output_cur) is list:
         for cur in output_cur:
-            query += '"' + input_cur + cur + '",' if input_cur != cur else '' # did you hear about '.format()'? Or at least %s?
+            query += '"' + input_cur + cur + '",' if input_cur != cur else ''  # TODO: '.format()'? Or at least %s?
     else:
-        query += '"' + input_cur + output_cur + '",' # again.. '.format()' or at least %s
+        query += '"' + input_cur + output_cur + '",'  # TODO: '.format()' or at least %s
     query = query[:-1] + ')'
     url = "http://query.yahooapis.com/v1/public/yql?q=" + query + "&env=store://datatables.org/alltableswithkeys"
 
@@ -120,12 +121,12 @@ def start():
                   'PEN', 'PGK', 'PHP', 'PKR', 'PLN', 'PYG', 'QAR', 'RON', 'RSD', 'RUB', 'RWF', 'SAR', 'SBD', 'SCR',
                   'SDG', 'SEK', 'SGD', 'SHP', 'SLL', 'SOS', 'SRD', 'SSP', 'STD', 'SYP', 'SZL', 'THB', 'TJS', 'TMT',
                   'TND', 'TOP', 'TRY', 'TTD', 'TWD', 'TZS', 'UAH', 'UGX', 'USD', 'UYU', 'UZS', 'VEF', 'VND', 'VUV',
-                  'WST', 'XAF', 'XCD', 'XOF', 'XPF', 'YER', 'ZAR', 'ZMW', 'ZWL'] # cool
+                  'WST', 'XAF', 'XCD', 'XOF', 'XPF', 'YER', 'ZAR', 'ZMW', 'ZWL']
     # symbols = parse_symbols()
     # these are the well known currency symbols that can be used, to parse them uncomment the function call above
     symbols = {'$': 'USD', '¢': 'GHC', '£': 'GBP', '¥': 'CNY', 'ƒ': 'ANG', '؋': 'AFN', '฿': 'THB', '៛': 'KHR',
                '₡': 'CRC', '₤': 'TRL', '₦': 'NGN', '₨': 'PKR', '₩': 'KRW', '₪': 'ILS', '₫': 'VND', '€': 'EUR',
-               '₭': 'LAK', '₮': 'MNT', '₱': 'CUP', '₴': 'UAH', '₹': 'INR', '﷼': 'IRR'} # cool
+               '₭': 'LAK', '₮': 'MNT', '₱': 'CUP', '₴': 'UAH', '₹': 'INR', '﷼': 'IRR'}
 
     args = get_parameters()
     check_currencies(args, currencies, symbols)  # will perform check of validity and translate symbols to 3 chars sets
@@ -141,7 +142,7 @@ def start():
             ret['output'][rate[3:]] = ""  # if conversion rate is missing leave field empty with ""
 
     # This will set Float precision to 2 digits after the floating point
-    encoder.FLOAT_REPR = lambda f: ("%.2f" % f) # cool
+    encoder.FLOAT_REPR = lambda f: ("%.2f" % f)
 
     # pretty print dumped json structure (output of the script)
     print(json.dumps(ret, sort_keys=True, indent=4, separators=(',', ': ')))
@@ -154,10 +155,8 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         print('Script will be terminated!')
         exit(0)
-        
-        
-shooter.vm@gmail.com
-doc:10/10	code:8/10	 creativity_bonus:2/inf
 
-coefficients:
-doc:0.1	    code:0.7	creativity_bonus:0.2 
+
+# doc:10/10	code:8/10	 creativity_bonus:2/inf
+# coefficients:
+# doc:0.1	    code:0.7	creativity_bonus:0.2
