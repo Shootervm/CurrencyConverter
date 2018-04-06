@@ -1,6 +1,6 @@
 # CurrencyConverter
 
-##Parameters
+## Parameters
  - `-h, --help` show this help message and exit
  - `--amount AMOUNT, -a AMOUNT`
   - Amount of imputed currency, that will be calculated by conversion rate/rates
@@ -11,9 +11,9 @@
   - Requested/Output currency (3 letters [Code ISO 4217] or currency symbol)
   - If missing all know currencies will be outputted
 
-##Functionality
+## Functionality
 
-##Output
+## Output
 - json with following structure.
 ```
 {
@@ -26,7 +26,7 @@
     }
 }
 ```
-##Examples
+## Examples
 ​
 ```
 ./currency_converter.py --amount 100.0 --input_currency EUR --output_currency CZK
